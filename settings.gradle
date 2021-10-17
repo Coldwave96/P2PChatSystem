@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'P2PChatSystem'
-include('app')
+include('chatpeer')
