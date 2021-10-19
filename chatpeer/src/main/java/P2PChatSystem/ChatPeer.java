@@ -41,6 +41,7 @@ public class ChatPeer {
             Socket socket = new Socket("127.0.0.1", port);
             flag = true;
         } catch (IOException ignored) {
+            //do nothing
         }
         return flag;
     }
@@ -70,5 +71,8 @@ public class ChatPeer {
         } catch (CmdLineException e) {
             System.out.println("Command line error: " + e.getMessage());
         }
+
+        new Thread(new ServerThread(chatPeer.getListenPort())).start();
+        new Thread(new ClientThread(chatPeer.getConnectPort())).start();
     }
 }
