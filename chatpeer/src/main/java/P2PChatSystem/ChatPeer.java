@@ -6,10 +6,16 @@ import org.kohsuke.args4j.Option;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ChatPeer {
     private int listenPort; //listen port
     private int connectPort; //connection port
+
+    public static HashMap<Socket, String> socketList = new HashMap<>(); //<SOCKET, ID>
+    public static HashMap<String, ArrayList<Socket>> roomList = new HashMap<>(); //<ROOM, SOCKET>
+
 
     public void setListenPort(int port) {
         this.listenPort = port;
@@ -70,6 +76,7 @@ public class ChatPeer {
             }
         } catch (CmdLineException e) {
             System.out.println("Command line error: " + e.getMessage());
+            System.exit(0);
         }
 
         new Thread(new ServerThread(chatPeer.getListenPort())).start();

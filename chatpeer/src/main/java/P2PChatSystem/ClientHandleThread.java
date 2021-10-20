@@ -38,16 +38,18 @@ public class ClientHandleThread implements Runnable {
 
     private void helper() {
         System.out.println("#help - list this information");
-        System.out.println("#join room - join a chat room");
-        System.out.println("#who room - request a member list of the chat room");
+        System.out.println("#join ROOM - join a chat room");
+        System.out.println("#who ROOM - request a member list of the chat room");
         System.out.println("#list - request a room list of the current peer");
         System.out.println("#listneighbors - request the server to list its neighbors");
+        System.out.println("#shout - delivery message to all rooms on all peers of the network");
         System.out.println("#quit - disconnect from the peer");
         System.out.println("message - all the input other than the commands below");
     }
 
     @Override
     public void run() {
+        setId(getS().getLocalSocketAddress().toString());
         Scanner kb = new Scanner(System.in);
 
         mainLoop:
@@ -59,6 +61,20 @@ public class ClientHandleThread implements Runnable {
             switch (command[0].toLowerCase()) {
                 case "#help":
                     helper();
+                    break;
+                case "#join":
+                    break;
+                case "who":
+                    break;
+                case "#list":
+                    break;
+                case "listneighbors":
+                    break;
+                case "#shout":
+                    break;
+                case "#quit":
+                    break;
+                default:
                     break;
             }
         }

@@ -21,6 +21,7 @@ public class ServerThread implements Runnable {
 
             while (true) {
                 Socket newSocket = serverSocket.accept();
+                ChatPeer.socketList.put(newSocket, newSocket.getRemoteSocketAddress().toString());
                 new Thread(new ServerHandleThread(newSocket)).start();
             }
         } catch (IOException e) {
