@@ -21,8 +21,13 @@ public class ServerThread implements Runnable {
 
             while (true) {
                 Socket newSocket = serverSocket.accept();
-                ChatPeer.socketList.put(newSocket, newSocket.getRemoteSocketAddress().toString());
-                new Thread(new ServerHandleThread(newSocket)).start();
+                String tempIp = newSocket.getInetAddress().toString().substring(1);
+                if (ChatPeer.blackList.contains(tempIp)) {
+                    System.out.printf("%s is blocked.\n", tempIp);
+                } else {
+                    ChatPeer.socketList.put(newSocket, newSocket.getRemoteSocketAddress().toString());
+                    new Thread(new ServerHandleThread(newSocket)).start();
+                }
             }
         } catch (IOException e) {
             System.out.printf("Error handling connections, %s\n", e.getMessage());

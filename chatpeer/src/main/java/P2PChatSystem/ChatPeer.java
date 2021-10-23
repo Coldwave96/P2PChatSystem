@@ -15,6 +15,7 @@ public class ChatPeer {
 
     public static HashMap<Socket, String> socketList = new HashMap<>(); //<SOCKET, ID>
     public static HashMap<String, ArrayList<Socket>> roomList = new HashMap<>(); //<ROOM, SOCKET>
+    public static ArrayList<String> blackList = new ArrayList<>();
 
 
     public void setListenPort(int port) {

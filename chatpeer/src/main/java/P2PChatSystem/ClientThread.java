@@ -1,9 +1,10 @@
 package P2PChatSystem;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ClientThread implements Runnable {
@@ -29,6 +30,7 @@ public class ClientThread implements Runnable {
         System.out.println("#join ROOM- join a chat room");
         System.out.println("#who ROOM - list all members in the chat room");
         System.out.println("#kick USER - kick the user and block he or she from reconnecting");
+        System.out.println("#delete ROOM - delete a chat room");
         System.out.println("#listneighbors - request the server to list its neighbors");
         System.out.println("#searchnetwork - list chat rooms over all accessible peers");
         System.out.println("#shout - delivery message to all rooms on all peers of the network");
@@ -69,7 +71,8 @@ public class ClientThread implements Runnable {
                             socket.bind(new InetSocketAddress(getPort()));
                             socket.connect(new InetSocketAddress(parse[0], Integer.parseInt(parse[1])));
                         }
-                        new Thread(new ClientHandleThread(socket)).start();
+                        ConnectionHandler connectionHandler = new ConnectionHandler(socket);
+                        connectionHandler.run();
                     } catch (Exception e) {
                         System.out.println("Error: " + e.getMessage());
                     }
@@ -85,7 +88,7 @@ public class ClientThread implements Runnable {
                         ChatPeer.roomList.put(command[1], new ArrayList<>());
                         System.out.printf("Room %s created.\n", command[1]);
                     } else {
-                        System.out.printf("Room %s is invalid or already in use.", command[1]);
+                        System.out.printf("Room %s is invalid or already in use.\n", command[1]);
                     }
                     break;
                 case "#list":
@@ -94,6 +97,7 @@ public class ClientThread implements Runnable {
                     }
                     break;
                 case "#join":
+                    System.out.println("Not connected to a peer yet.");
                     break;
                 case "#who":
                     if (ChatPeer.roomList.containsKey(command[1])) {
@@ -103,18 +107,49 @@ public class ClientThread implements Runnable {
                     }
                     break;
                 case "#kick":
+                    if (!ChatPeer.socketList.containsValue(command[1])) {
+                        System.out.println("Peer not exist.");
+                    } else {
+                        for (Socket s : ChatPeer.socketList.keySet()) {
+                            if (Objects.equals(ChatPeer.socketList.get(s), '/' + command[1])) {
+                                try {
+                                    s.close();
+                                    ChatPeer.socketList.remove(s);
+                                    for (String room : ChatPeer.roomList.keySet()) {
+                                        ChatPeer.roomList.get(room).remove(s);
+                                    }
+
+                                    String[] tempStr = command[1].split(":");
+                                    ChatPeer.blackList.add(tempStr[1].substring(1));
+                                } catch (IOException e) {
+                                    System.out.println("Error: " + e.getMessage());
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case "#delete":
+                    if (ChatPeer.roomList.containsKey(command[1])) {
+                        ChatPeer.roomList.remove(command[1]);
+                        //send RoomChange message to peers
+                    } else {
+                        System.out.println("Room " + command[1] + " does not exist.");
+                    }
                     break;
                 case "#listneighbors":
+                    System.out.println(ChatPeer.socketList.keySet());
                     break;
                 case "#searchnetwork":
                     break;
                 case "#shout":
                     break;
                 case "#quit":
-                    break;
+                    break mainLoop;
                 default:
+                    System.out.println("You have not connected to a peer yet.");
                     break;
             }
         }
+        System.exit(0);
     }
 }
