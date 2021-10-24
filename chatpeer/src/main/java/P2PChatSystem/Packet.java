@@ -25,6 +25,7 @@ public class Packet {
 
     private List<String> identities = new ArrayList<>(); //all clients in the room
     private Map<String, Object> rooms = new HashMap<>(); //room list
+    private String neighbors; //all neighbors
 
     public String getType() {
         return type;
@@ -80,6 +81,14 @@ public class Packet {
 
     public void setRooms(Map<String, Object> rooms) {
         this.rooms = rooms;
+    }
+
+    public String getNeighbors() {
+        return neighbors;
+    }
+
+    public void setNeighbors(String neighbors) {
+        this.neighbors = neighbors;
     }
 
     private Map<String, Object> other = new HashMap<>(); //other field

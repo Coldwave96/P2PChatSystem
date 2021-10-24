@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +70,7 @@ public class ConnectionHandler {
                 while (true) {
                     try {
                         String content = in.readUTF();
+//                        System.out.println(content);
                         handleContent(content);
                     } catch (Exception e) {
                         break;
@@ -91,11 +93,15 @@ public class ConnectionHandler {
                         out.flush();
                         break;
                     case "#who":
-                        Map<String, Object> whoMap = new HashMap<>();
-                        whoMap.put("type", "who");
-                        whoMap.put("roomId", command[1]);
-                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(whoMap));
-                        out.flush();
+                        if (ChatPeer.roomList.containsKey(command[1])) {
+                            Map<String, Object> whoMap = new HashMap<>();
+                            whoMap.put("type", "who");
+                            whoMap.put("roomId", command[1]);
+                            out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(whoMap));
+                            out.flush();
+                        } else {
+                            System.out.println("Room " + command[1] + " does not exist.");
+                        }
                         break;
                     case "#list":
                         Map<String, Object> listMap = new HashMap<>();
@@ -104,28 +110,50 @@ public class ConnectionHandler {
                         out.flush();
                         break;
                     case "#listneighbors":
+                        Map<String, Object> listneighborsMap = new HashMap<>();
+                        listneighborsMap.put("type", "listneighbors");
+                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(listneighborsMap));
+                        out.flush();
                         break;
                     case "#shout":
+                        Map<String, Object> shoutMap = new HashMap<>();
+                        shoutMap.put("type", "shout");
+                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shoutMap));
+                        out.flush();
                         break;
                     case "#quit":
+                        Map<String, Object> quitMap = new HashMap<>();
+                        quitMap.put("type", "quit");
+                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(quitMap));
+                        out.flush();
                         break mainLoop;
                     default:
+                        Map<String, Object> messageMap = new HashMap<>();
+                        messageMap.put("type", "message");
+                        messageMap.put("content", input);
+                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(messageMap));
+                        out.flush();
                         break;
                 }
             }
+            in.close();
+            out.close();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             System.exit(0);
         }
     }
 
-    private void handleContent(String content) throws JsonProcessingException {
+    private void handleContent(String content) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Packet packet = mapper.readValue(content, Packet.class);
 
+        if (packet.getNeighbors() != null && packet.getType() == null) {
+            System.out.println(packet.getNeighbors());
+        }
+
         switch (packet.getType()) {
             case "roomlist":
-                System.out.println("Room list:");
                 for (String room : packet.getRooms().keySet()) {
                     System.out.println(room + ": " + packet.getRooms().get(room) + " guests");
                 }
@@ -143,6 +171,21 @@ public class ConnectionHandler {
                 break;
             case "message":
                 System.out.println(packet.getIdentity() + ": " + packet.getContent());
+                break;
+            case "shout":
+                System.out.println(packet.getIdentity() + " shouted");
+
+                Map<String, Object> shout = new HashMap<>();
+                shout.put("type", "shout");
+                shout.put("identity", packet.getIdentity());
+                for (String room : ChatPeer.roomList.keySet()) {
+                    for (Socket s : ChatPeer.roomList.get(room)) {
+                        DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
+                        outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
+                        outputStream.writeUTF("EOF");
+                        outputStream.flush();
+                    }
+                }
                 break;
         }
     }

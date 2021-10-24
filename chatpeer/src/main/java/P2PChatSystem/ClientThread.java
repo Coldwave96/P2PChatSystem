@@ -1,11 +1,12 @@
 package P2PChatSystem;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 public class ClientThread implements Runnable {
     private int port;
@@ -27,15 +28,12 @@ public class ClientThread implements Runnable {
         System.out.println("#connect IP[:port] [local port] - connect to another peer");
         System.out.println("#createroom ROOM - create a chat room");
         System.out.println("#list - list all the chat room in the peer");
-        System.out.println("#join ROOM- join a chat room");
         System.out.println("#who ROOM - list all members in the chat room");
         System.out.println("#kick USER - kick the user and block he or she from reconnecting");
         System.out.println("#delete ROOM - delete a chat room");
         System.out.println("#listneighbors - request the server to list its neighbors");
         System.out.println("#searchnetwork - list chat rooms over all accessible peers");
-        System.out.println("#shout - delivery message to all rooms on all peers of the network");
         System.out.println("#quit - quit the system");
-        System.out.println("message - all the input other than the commands below");
     }
 
     @Override
@@ -96,9 +94,6 @@ public class ClientThread implements Runnable {
                         System.out.println(room + ": " + ChatPeer.roomList.get(room).size() + " guests");
                     }
                     break;
-                case "#join":
-                    System.out.println("Not connected to a peer yet.");
-                    break;
                 case "#who":
                     if (ChatPeer.roomList.containsKey(command[1])) {
                         System.out.println(command[1] + " contains " + ChatPeer.roomList.get(command[1]));
@@ -130,23 +125,37 @@ public class ClientThread implements Runnable {
                     break;
                 case "#delete":
                     if (ChatPeer.roomList.containsKey(command[1])) {
+                        for (Socket s : ChatPeer.roomList.get(command[1])) {
+                            try {
+                                DataOutputStream out = new DataOutputStream(s.getOutputStream());
+                                Map<String, Object> deleteMap = new HashMap<>();
+                                ObjectMapper mapper = new ObjectMapper();
+                                deleteMap.put("type", "roomchange");
+                                deleteMap.put("identity", ChatPeer.socketList.get(s));
+                                deleteMap.put("former", command[1]);
+                                deleteMap.put("roomId", "");
+                                out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(deleteMap));
+                                out.writeUTF("EOF");
+                                out.flush();
+                            } catch (IOException e) {
+                                System.out.println("Error: " + e.getMessage());
+                            }
+                        }
                         ChatPeer.roomList.remove(command[1]);
-                        //send RoomChange message to peers
                     } else {
                         System.out.println("Room " + command[1] + " does not exist.");
                     }
                     break;
                 case "#listneighbors":
-                    System.out.println(ChatPeer.socketList.keySet());
+                    System.out.println(ChatPeer.socketList.values());
                     break;
                 case "#searchnetwork":
-                    break;
-                case "#shout":
+                    //search network
                     break;
                 case "#quit":
                     break mainLoop;
                 default:
-                    System.out.println("You have not connected to a peer yet.");
+                    helper();
                     break;
             }
         }

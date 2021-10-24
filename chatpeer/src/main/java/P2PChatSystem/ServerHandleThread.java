@@ -103,12 +103,62 @@ public class ServerHandleThread implements Runnable {
                         out.writeUTF("EOF");
                         out.flush();
                         break;
+                    case "listneighbors":
+                        Map<String, Object> neighbors = new HashMap<>();
+                        HashMap<Socket, String> tempSocket = ChatPeer.socketList;
+                        tempSocket.remove(s);
+                        neighbors.put("neighbors", tempSocket.values().toString());
+                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(neighbors));
+                        out.writeUTF("EOF");
+                        out.flush();
+                        break;
+                    case "quit":
+                        quit();
+                        break mainLoop;
+                    case "message":
+                        Map<String, Object> message = new HashMap<>();
+                        message.put("type", "message");
+                        message.put("identity", ChatPeer.socketList.get(s));
+                        message.put("content", command.getContent());
+
+                        String roomId = null;
+                        for (String room : ChatPeer.roomList.keySet()) {
+                            if (ChatPeer.roomList.get(room).contains(s)) {
+                                roomId = room;
+                            }
+                        }
+
+                        if (roomId != null) {
+                            for (Socket socket : ChatPeer.roomList.get(roomId)) {
+                                DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+                                outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
+                                outputStream.writeUTF("EOF");
+                                outputStream.flush();
+                            }
+                        } else {
+                            out.writeUTF("EOF");
+                            out.flush();
+                        }
+                        break;
+                    case "shout":
+                        Map<String, Object> shout = new HashMap<>();
+                        shout.put("type", "shout");
+                        shout.put("identity", ChatPeer.socketList.get(s));
+
+                        for (String room : ChatPeer.roomList.keySet()) {
+                            for (Socket s : ChatPeer.roomList.get(room)) {
+                                DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
+                                outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
+                                outputStream.writeUTF("EOF");
+                                outputStream.flush();
+                            }
+                        }
+                        break;
                 }
             }
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
             System.exit(0);
         }
     }
@@ -136,5 +186,12 @@ public class ServerHandleThread implements Runnable {
         }
         map.put("identities", roomMember);
         out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map));
+    }
+
+    private void quit() {
+        for (String room : ChatPeer.roomList.keySet()) {
+            ChatPeer.roomList.get(room).remove(s);
+        }
+        ChatPeer.socketList.remove(s);
     }
 }
