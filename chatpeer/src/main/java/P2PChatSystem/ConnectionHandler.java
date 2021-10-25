@@ -1,15 +1,12 @@
 package P2PChatSystem;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class ConnectionHandler {
@@ -53,7 +50,6 @@ public class ConnectionHandler {
 
             mainLoop:
             while (true) {
-                System.out.printf("[%s] %s>", roomId, id);
                 String input = kb.nextLine();
                 String[] command = input.split(" ");
 
@@ -86,9 +82,9 @@ public class ConnectionHandler {
                         out.flush();
                         break;
                     case "#listneighbors":
-                        Map<String, Object> listneighborsMap = new HashMap<>();
-                        listneighborsMap.put("type", "listneighbors");
-                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(listneighborsMap));
+                        Map<String, Object> listNeighborsMap = new HashMap<>();
+                        listNeighborsMap.put("type", "listneighbors");
+                        out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(listNeighborsMap));
                         out.flush();
                         break;
                     case "#shout":

@@ -61,7 +61,7 @@ public class ClientThread implements Runnable {
                         }
 
                         String[] parse = command[1].split(":");
-                        Socket socket = null;
+                        Socket socket;
                         if (getPort() == 0) {
                             socket = new Socket(parse[0], Integer.parseInt(parse[1]));
                         } else {
@@ -135,7 +135,6 @@ public class ClientThread implements Runnable {
                                 deleteMap.put("former", command[1]);
                                 deleteMap.put("roomId", "");
                                 out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(deleteMap));
-                                out.writeUTF("EOF");
                                 out.flush();
                             } catch (IOException e) {
                                 System.out.println("Error: " + e.getMessage());
@@ -155,7 +154,7 @@ public class ClientThread implements Runnable {
                 case "#quit":
                     break mainLoop;
                 default:
-                    helper();
+                    System.out.println("Use #help command to get more information.");
                     break;
             }
         }

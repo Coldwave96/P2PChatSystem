@@ -29,21 +29,18 @@ public class MessageHandleThread extends Thread {
     public void run() {
             try {
                 while (true) {
+                    System.out.printf("[%s] %s>", ConnectionHandler.roomId, ConnectionHandler.id);
                     String content = getIn().readUTF();
                     handleContent(content);
-                    System.out.printf("[%s] %s>", ConnectionHandler.roomId, ConnectionHandler.id);
                 }
             } catch (Exception e) {
                 //do nothing
-                e.printStackTrace();
             }
     }
 
     private void handleContent(String content) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Packet packet = mapper.readValue(content, Packet.class);
-
-        System.out.print('\n');
 
         if (packet.getNeighbors() != null && packet.getType() == null) {
             System.out.println(packet.getNeighbors());
