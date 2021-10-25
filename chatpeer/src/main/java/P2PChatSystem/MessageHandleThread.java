@@ -51,7 +51,7 @@ public class MessageHandleThread extends Thread {
                         System.out.println("Not create a room yet.");
                     } else {
                         for (String room : packet.getRooms().keySet()) {
-                            System.out.println(room + ": " + packet.getRooms().get(room) + " guests");
+                            System.out.println(room + ": " + packet.getRooms().get(room) + " users");
                         }
                     }
                     break;

@@ -15,8 +15,8 @@ public class ChatPeer {
 
     public static HashMap<Socket, String> socketList = new HashMap<>(); //<SOCKET, ID>
     public static HashMap<String, ArrayList<Socket>> roomList = new HashMap<>(); //<ROOM, SOCKET>
-    public static ArrayList<String> blackList = new ArrayList<>();
-    public static ArrayList<String> hostList = new ArrayList<>();
+    public static ArrayList<String> blackList = new ArrayList<>(); //peers been kicked
+    public static HashMap<Socket, String> neighbors = new HashMap<>(); //neighborhood peers
 
     public void setConnectPort(int port) {
         this.connectPort = port;

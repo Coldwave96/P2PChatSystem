@@ -146,7 +146,7 @@ public class ClientThread implements Runnable {
                     }
                     break;
                 case "#listneighbors":
-                    System.out.println(ChatPeer.hostList);
+                    System.out.println(ChatPeer.neighbors.values());
                     break;
                 case "#searchnetwork":
                     //search network

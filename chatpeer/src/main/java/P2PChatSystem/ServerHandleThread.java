@@ -34,7 +34,9 @@ public class ServerHandleThread implements Runnable {
                 //handle command messages send by clients
                 switch (command.getType()) {
                     case "hostchange":
-                        ChatPeer.hostList.add(command.getHost());
+                        if (!ChatPeer.neighbors.containsValue(command.getHost())) {
+                            ChatPeer.neighbors.put(s, command.getHost());
+                        }
                         break;
                     case "join":
                         //find the client's current room
@@ -98,12 +100,11 @@ public class ServerHandleThread implements Runnable {
                         out.flush();
                         break;
                     case "listneighbors":
-                        ArrayList<String> tempHost = ChatPeer.hostList;
-                        String hostSelf = s.getLocalAddress() + ":" + ChatPeer.listenPort;
-                        tempHost.remove(hostSelf);
+                        HashMap<Socket, String> tempHost = ChatPeer.neighbors;
+                        tempHost.remove(s);
 
                         Map<String, Object> neighbors = new HashMap<>();
-                        neighbors.put("neighbors", tempHost.toString());
+                        neighbors.put("neighbors", tempHost.values().toString());
                         out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(neighbors));
                         out.flush();
                         break;
@@ -185,5 +186,13 @@ public class ServerHandleThread implements Runnable {
             ChatPeer.roomList.get(room).remove(s);
         }
         ChatPeer.socketList.remove(s);
+
+        String[] tempSocket = s.getRemoteSocketAddress().toString().split(":");
+        for (String str : ChatPeer.hostList) {
+            String[] tempHost = str.split(":");
+            if (tempHost[0].equals(tempSocket[0])) {
+                ChatPeer.hostList.remove(str);
+            }
+        }
     }
 }
