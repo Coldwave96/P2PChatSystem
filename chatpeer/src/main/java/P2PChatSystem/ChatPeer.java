@@ -10,21 +10,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ChatPeer {
-    private int listenPort; //listen port
+    public static int listenPort; //listen port
     private int connectPort; //connection port
 
     public static HashMap<Socket, String> socketList = new HashMap<>(); //<SOCKET, ID>
     public static HashMap<String, ArrayList<Socket>> roomList = new HashMap<>(); //<ROOM, SOCKET>
     public static ArrayList<String> blackList = new ArrayList<>();
-
-
-    public void setListenPort(int port) {
-        this.listenPort = port;
-    }
-
-    public int getListenPort() {
-        return listenPort;
-    }
+    public static ArrayList<String> hostList = new ArrayList<>();
 
     public void setConnectPort(int port) {
         this.connectPort = port;
@@ -72,7 +64,7 @@ public class ChatPeer {
                 System.out.printf("Port %d is occupied. Please try another one.\n", option.iPort);
                 System.exit(0);
             } else {
-                chatPeer.setListenPort(option.pPort);
+                listenPort = option.pPort;
                 chatPeer.setConnectPort(option.iPort);
             }
         } catch (CmdLineException e) {
@@ -80,7 +72,7 @@ public class ChatPeer {
             System.exit(0);
         }
 
-        new Thread(new ServerThread(chatPeer.getListenPort())).start();
+        new Thread(new ServerThread(listenPort)).start();
         new Thread(new ClientThread(chatPeer.getConnectPort())).start();
     }
 }

@@ -9,18 +9,18 @@ import java.net.Socket;
 import java.util.*;
 
 public class ClientThread implements Runnable {
-    private int port;
+    private int connectPort;
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setConnectPort(int port) {
+        this.connectPort = port;
     }
 
-    public int getPort() {
-        return port;
+    public int getConnectPort() {
+        return connectPort;
     }
 
-    public ClientThread(int port) {
-        setPort(port);
+    public ClientThread(int connectPort) {
+        setConnectPort(connectPort);
     }
 
     private void helper() {
@@ -56,17 +56,17 @@ public class ClientThread implements Runnable {
                             } else if (ChatPeer.isLocalPortUsing(port)) {
                                 System.out.printf("Port %d is occupied. Please try another one.\n", port);
                             } else {
-                                setPort(port);
+                                setConnectPort(port);
                             }
                         }
 
                         String[] parse = command[1].split(":");
                         Socket socket;
-                        if (getPort() == 0) {
+                        if (getConnectPort() == 0) {
                             socket = new Socket(parse[0], Integer.parseInt(parse[1]));
                         } else {
                             socket = new Socket();
-                            socket.bind(new InetSocketAddress(getPort()));
+                            socket.bind(new InetSocketAddress(getConnectPort()));
                             socket.connect(new InetSocketAddress(parse[0], Integer.parseInt(parse[1])));
                         }
                         ConnectionHandler connectionHandler = new ConnectionHandler(socket);
@@ -146,7 +146,7 @@ public class ClientThread implements Runnable {
                     }
                     break;
                 case "#listneighbors":
-                    System.out.println(ChatPeer.socketList.values());
+                    System.out.println(ChatPeer.hostList);
                     break;
                 case "#searchnetwork":
                     //search network

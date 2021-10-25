@@ -43,6 +43,13 @@ public class ConnectionHandler {
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
             ObjectMapper mapper = new ObjectMapper();
 
+            Map<String, Object> hostChangeMap = new HashMap<>();
+            hostChangeMap.put("type", "hostchange");
+            String host = getS().getLocalAddress() + ":" + ChatPeer.listenPort;
+            hostChangeMap.put("host", host);
+            out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(hostChangeMap));
+            out.flush();
+
             id = getS().getLocalSocketAddress().toString();
             Scanner kb = new Scanner(System.in);
 

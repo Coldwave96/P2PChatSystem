@@ -47,8 +47,12 @@ public class MessageHandleThread extends Thread {
         } else {
             switch (packet.getType()) {
                 case "roomlist":
-                    for (String room : packet.getRooms().keySet()) {
-                        System.out.println(room + ": " + packet.getRooms().get(room) + " guests");
+                    if (packet.getRooms().isEmpty()) {
+                        System.out.println("Not create a room yet.");
+                    } else {
+                        for (String room : packet.getRooms().keySet()) {
+                            System.out.println(room + ": " + packet.getRooms().get(room) + " guests");
+                        }
                     }
                     break;
                 case "roomchange":
