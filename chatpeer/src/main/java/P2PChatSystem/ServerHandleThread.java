@@ -143,9 +143,9 @@ public class ServerHandleThread implements Runnable {
                         break;
                 }
             }
-
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
             System.exit(0);
         }
     }

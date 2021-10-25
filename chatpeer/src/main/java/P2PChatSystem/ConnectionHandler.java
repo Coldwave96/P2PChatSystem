@@ -15,7 +15,7 @@ import java.util.Scanner;
 public class ConnectionHandler {
     private Socket s;
     public static String roomId;
-    private String id;
+    public static String id;
 
     public void setS(Socket s) {
         this.s = s;
@@ -23,14 +23,6 @@ public class ConnectionHandler {
 
     public Socket getS() {
         return s;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public ConnectionHandler(Socket socket) {
@@ -54,14 +46,14 @@ public class ConnectionHandler {
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
             ObjectMapper mapper = new ObjectMapper();
 
-            setId(getS().getLocalSocketAddress().toString());
+            id = getS().getLocalSocketAddress().toString();
             Scanner kb = new Scanner(System.in);
 
             new Thread(new MessageHandleThread(in)).start();
 
             mainLoop:
             while (true) {
-                System.out.printf("[%s] %s>", roomId, getId());
+                System.out.printf("[%s] %s>", roomId, id);
                 String input = kb.nextLine();
                 String[] command = input.split(" ");
 
@@ -124,6 +116,7 @@ public class ConnectionHandler {
             out.close();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
             System.exit(0);
         }
     }
