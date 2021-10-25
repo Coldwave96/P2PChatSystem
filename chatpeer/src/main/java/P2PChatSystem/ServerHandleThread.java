@@ -22,7 +22,6 @@ public class ServerHandleThread implements Runnable {
             ObjectMapper mapper = new ObjectMapper();
 
             roomListMessage(out, mapper);
-            out.writeUTF("EOF");
             out.flush();
 
             DataInputStream in = new DataInputStream(s.getInputStream());
@@ -59,7 +58,6 @@ public class ServerHandleThread implements Runnable {
                                 for (Socket s : formerRoom) {
                                     DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
                                     outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(joinMap1));
-                                    outputStream.writeUTF("EOF");
                                     outputStream.flush();
                                 }
                             }
@@ -68,11 +66,8 @@ public class ServerHandleThread implements Runnable {
                             for (Socket s : ChatPeer.roomList.get(command.getRoomId())) {
                                 DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
                                 outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(joinMap1));
-                                outputStream.writeUTF("EOF");
                                 outputStream.flush();
                             }
-
-                            out.writeUTF("EOF");
                             out.flush();
 
                             //remove client from former room
@@ -88,19 +83,15 @@ public class ServerHandleThread implements Runnable {
                             joinMap2.put("former", former);
                             joinMap2.put("roomId", former);
                             out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(joinMap2));
-
-                            out.writeUTF("EOF");
                             out.flush();
                         }
                         break;
                     case "who":
                         roomContentMessage(out, mapper, command.getRoomId());
-                        out.writeUTF("EOF");
                         out.flush();
                         break;
                     case "list":
                         roomListMessage(out, mapper);
-                        out.writeUTF("EOF");
                         out.flush();
                         break;
                     case "listneighbors":
@@ -109,7 +100,6 @@ public class ServerHandleThread implements Runnable {
                         tempSocket.remove(s);
                         neighbors.put("neighbors", tempSocket.values().toString());
                         out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(neighbors));
-                        out.writeUTF("EOF");
                         out.flush();
                         break;
                     case "quit":
@@ -132,11 +122,9 @@ public class ServerHandleThread implements Runnable {
                             for (Socket socket : ChatPeer.roomList.get(roomId)) {
                                 DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                                 outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
-                                outputStream.writeUTF("EOF");
                                 outputStream.flush();
                             }
                         } else {
-                            out.writeUTF("EOF");
                             out.flush();
                         }
                         break;
@@ -149,7 +137,6 @@ public class ServerHandleThread implements Runnable {
                             for (Socket s : ChatPeer.roomList.get(room)) {
                                 DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
                                 outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
-                                outputStream.writeUTF("EOF");
                                 outputStream.flush();
                             }
                         }

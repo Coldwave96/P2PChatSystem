@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class ConnectionHandler {
     private Socket s;
-    public String roomId;
+    public static String roomId;
     private String id;
 
     public void setS(Socket s) {
@@ -23,14 +23,6 @@ public class ConnectionHandler {
 
     public Socket getS() {
         return s;
-    }
-
-    public String getRoomId() {
-        return roomId;
-    }
-
-    public void setRoomId(String roomId) {
-        this.roomId = roomId;
     }
 
     public void setId(String id) {
@@ -65,19 +57,11 @@ public class ConnectionHandler {
             setId(getS().getLocalSocketAddress().toString());
             Scanner kb = new Scanner(System.in);
 
+            new Thread(new MessageHandleThread(in)).start();
+
             mainLoop:
             while (true) {
-                while (true) {
-                    try {
-                        String content = in.readUTF();
-//                        System.out.println(content);
-                        handleContent(content);
-                    } catch (Exception e) {
-                        break;
-                    }
-                }
-
-                System.out.printf("[%s] %s>", getRoomId(), getId());
+                System.out.printf("[%s] %s>", roomId, getId());
                 String input = kb.nextLine();
                 String[] command = input.split(" ");
 
@@ -141,52 +125,6 @@ public class ConnectionHandler {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             System.exit(0);
-        }
-    }
-
-    private void handleContent(String content) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        Packet packet = mapper.readValue(content, Packet.class);
-
-        if (packet.getNeighbors() != null && packet.getType() == null) {
-            System.out.println(packet.getNeighbors());
-        }
-
-        switch (packet.getType()) {
-            case "roomlist":
-                for (String room : packet.getRooms().keySet()) {
-                    System.out.println(room + ": " + packet.getRooms().get(room) + " guests");
-                }
-                break;
-            case "roomchange":
-                if (Objects.equals(packet.getFormer(), "")) {
-                    System.out.println(packet.getIdentity() + " moves to " + packet.getRoomId());
-                } else {
-                    System.out.println(packet.getIdentity() + " moved from " + packet.getFormer() + " to " + packet.getRoomId());
-                }
-                setRoomId(packet.getRoomId());
-                break;
-            case "roomcontents":
-                System.out.println(packet.getRoomId() + " contains " + packet.getIdentities());
-                break;
-            case "message":
-                System.out.println(packet.getIdentity() + ": " + packet.getContent());
-                break;
-            case "shout":
-                System.out.println(packet.getIdentity() + " shouted");
-
-                Map<String, Object> shout = new HashMap<>();
-                shout.put("type", "shout");
-                shout.put("identity", packet.getIdentity());
-                for (String room : ChatPeer.roomList.keySet()) {
-                    for (Socket s : ChatPeer.roomList.get(room)) {
-                        DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
-                        outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
-                        outputStream.writeUTF("EOF");
-                        outputStream.flush();
-                    }
-                }
-                break;
         }
     }
 }
