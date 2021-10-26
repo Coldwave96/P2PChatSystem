@@ -2,6 +2,7 @@ package P2PChatSystem;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -149,7 +150,8 @@ public class ClientThread implements Runnable {
                     System.out.println(ChatPeer.neighbors.values());
                     break;
                 case "#searchnetwork":
-                    //search network
+                    HashMap<Socket, String> network = ChatPeer.neighbors;
+                    searchNetwork(network);
                     break;
                 case "#quit":
                     break mainLoop;
@@ -159,5 +161,55 @@ public class ClientThread implements Runnable {
             }
         }
         System.exit(0);
+    }
+
+    private void searchNetwork(HashMap<Socket, String> network) {
+        for (Socket s : network.keySet()) {
+            try {
+                String[] temp = network.get(s).split(":");
+                Socket socket = new Socket(temp[0].substring(1), Integer.parseInt(temp[1]));
+
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                ObjectMapper mapper = new ObjectMapper();
+                String roomList = in.readUTF();
+                Packet packet1 = mapper.readValue(roomList, Packet.class);
+                System.out.println(socket.getRemoteSocketAddress());
+                if (packet1.getRooms().isEmpty()) {
+                    System.out.println("Not create a room yet.");
+                } else {
+                    for (String room : packet1.getRooms().keySet()) {
+                        System.out.println(room + ": " + packet1.getRooms().get(room) + " users");
+                    }
+                }
+
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                Map<String, Object> listMap = new HashMap<>();
+                listMap.put("type", "listneighbors");
+                out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(listMap));
+                out.flush();
+
+                String newPeers = in.readUTF();
+                Packet packet2 = mapper.readValue(newPeers, Packet.class);
+                if (!packet2.getNeighbors().equals("[]")) {
+                    HashMap<Socket, String> newNetwork = new HashMap<>();
+                    String[] tempPeers = packet2.getNeighbors().substring(1, packet2.getNeighbors().length()-1).split(", ");
+                    for (String str : tempPeers) {
+                        if (!listMap.containsValue(str)) {
+                            String[] tempStr = str.split(":");
+                            Socket tempSocket = new Socket(tempStr[0].substring(1), Integer.parseInt(tempStr[1]));
+                            newNetwork.put(tempSocket, str);
+                        }
+                    }
+                    if (!newNetwork.isEmpty()) {
+                        searchNetwork(newNetwork);
+                    }
+                } else {
+                    System.out.println("Searching...");
+                }
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+        System.out.println("All done!");
     }
 }

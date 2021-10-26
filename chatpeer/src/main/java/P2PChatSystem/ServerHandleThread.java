@@ -186,13 +186,6 @@ public class ServerHandleThread implements Runnable {
             ChatPeer.roomList.get(room).remove(s);
         }
         ChatPeer.socketList.remove(s);
-
-        String[] tempSocket = s.getRemoteSocketAddress().toString().split(":");
-        for (String str : ChatPeer.hostList) {
-            String[] tempHost = str.split(":");
-            if (tempHost[0].equals(tempSocket[0])) {
-                ChatPeer.hostList.remove(str);
-            }
-        }
+        ChatPeer.neighbors.remove(s);
     }
 }
