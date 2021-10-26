@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class ConnectionHandler {
     private Socket s;
-    public static String roomId;
+    public static String roomId = "";
     public static String id;
 
     public void setS(Socket s) {
@@ -101,6 +101,7 @@ public class ConnectionHandler {
                         out.flush();
                         break;
                     case "#quit":
+                        roomId = "";
                         Map<String, Object> quitMap = new HashMap<>();
                         quitMap.put("type", "quit");
                         out.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(quitMap));
@@ -115,11 +116,11 @@ public class ConnectionHandler {
                         break;
                 }
             }
+            ClientThread.connectStat = false;
             in.close();
             out.close();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
             System.exit(0);
         }
     }

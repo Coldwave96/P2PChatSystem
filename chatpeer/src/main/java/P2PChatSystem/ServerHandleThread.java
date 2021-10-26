@@ -136,15 +136,16 @@ public class ServerHandleThread implements Runnable {
                         break;
                     case "shout":
                         Map<String, Object> shout = new HashMap<>();
-                        shout.put("type", "shout");
-                        shout.put("identity", ChatPeer.socketList.get(s));
+                        if (command.getIdentity() == null) {
+                            shout.put("type", "shout");
+                            shout.put("identity", ChatPeer.socketList.get(s));
 
-                        for (String room : ChatPeer.roomList.keySet()) {
-                            for (Socket s : ChatPeer.roomList.get(room)) {
-                                DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
-                                outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
-                                outputStream.flush();
-                            }
+                            shout(mapper, shout);
+                        } else {
+                            shout.put("type", "shout");
+                            shout.put("identity", command.getIdentity());
+
+                            shout(mapper, shout);
                         }
                         break;
                 }
@@ -153,6 +154,25 @@ public class ServerHandleThread implements Runnable {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
             System.exit(0);
+        }
+    }
+
+    private void shout(ObjectMapper mapper, Map<String, Object> shout) throws IOException {
+        for (String room : ChatPeer.roomList.keySet()) {
+            for (Socket s : ChatPeer.roomList.get(room)) {
+                    DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
+                    outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
+                    outputStream.flush();
+            }
+        }
+
+        if (ClientThread.connectStat) {
+            String server = ClientThread.connectSocket.getRemoteSocketAddress().toString();
+            if (!server.equals(ClientThread.connectSocket.getLocalAddress() + ":" + ChatPeer.listenPort)) {
+                DataOutputStream connectOut = new DataOutputStream(ClientThread.connectSocket.getOutputStream());
+                connectOut.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
+                connectOut.flush();
+            }
         }
     }
 

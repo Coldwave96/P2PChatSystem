@@ -42,6 +42,8 @@ public class MessageHandleThread extends Thread {
         ObjectMapper mapper = new ObjectMapper();
         Packet packet = mapper.readValue(content, Packet.class);
 
+        System.out.println("\nReceived:");
+
         if (packet.getNeighbors() != null && packet.getType() == null) {
             System.out.println(packet.getNeighbors());
         } else {

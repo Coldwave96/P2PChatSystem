@@ -11,6 +11,8 @@ import java.util.*;
 
 public class ClientThread implements Runnable {
     private int connectPort;
+    public static boolean connectStat;
+    public static Socket connectSocket;
 
     public void setConnectPort(int port) {
         this.connectPort = port;
@@ -70,6 +72,8 @@ public class ClientThread implements Runnable {
                             socket.bind(new InetSocketAddress(getConnectPort()));
                             socket.connect(new InetSocketAddress(parse[0], Integer.parseInt(parse[1])));
                         }
+                        connectStat = true;
+                        connectSocket = socket;
                         ConnectionHandler connectionHandler = new ConnectionHandler(socket);
                         connectionHandler.run();
                     } catch (Exception e) {

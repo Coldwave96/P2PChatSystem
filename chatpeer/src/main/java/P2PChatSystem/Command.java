@@ -20,6 +20,7 @@ public class Command {
     private String roomId; //room id
     private String content; //message content
     private String host; //peer's host
+    private String identity; //shout peer
 
     public String getType() {
         return type;
@@ -51,6 +52,14 @@ public class Command {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String getIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(String identity) {
+        this.identity = identity;
     }
 
     private Map<String, Object> other = new HashMap<>();
