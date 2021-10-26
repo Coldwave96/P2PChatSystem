@@ -77,9 +77,11 @@ public class MessageHandleThread extends Thread {
                     shout.put("identity", packet.getIdentity());
                     for (String room : ChatPeer.roomList.keySet()) {
                         for (Socket s : ChatPeer.roomList.get(room)) {
-                            DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
-                            outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
-                            outputStream.flush();
+                            if (!s.getLocalSocketAddress().toString().equals(s.getLocalAddress() + ":" + ChatPeer.listenPort)){
+                                DataOutputStream outputStream = new DataOutputStream(s.getOutputStream());
+                                outputStream.writeUTF(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shout));
+                                outputStream.flush();
+                            }
                         }
                     }
                     break;
