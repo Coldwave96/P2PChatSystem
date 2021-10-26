@@ -150,8 +150,7 @@ public class ClientThread implements Runnable {
                     System.out.println(ChatPeer.neighbors.values());
                     break;
                 case "#searchnetwork":
-                    HashMap<Socket, String> network = ChatPeer.neighbors;
-                    searchNetwork(network);
+                    searchNetwork(ChatPeer.neighbors);
                     break;
                 case "#quit":
                     break mainLoop;
